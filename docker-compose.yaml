@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  source_postgres:
+    image: postgres:15
+    ports:
+      -
+    networks:
+        - valu
+    environment:
+        name: value
