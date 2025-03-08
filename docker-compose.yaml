@@ -1,11 +1,43 @@
-version: '3'
+version: '3'  # Specifies the Docker Compose file format version. Docker docs says it's just for the backwards compatibility.
 
-services:
-  source_postgres:
-    image: postgres:15
+services:  # Defines the services (containers) to be created.
+
+  source_postgres:  # Defines the first PostgreSQL database container (source database).
+    image: postgres:15  # Uses the official PostgreSQL image, version 15.
     ports:
-      -
+      - '5433:5432'  # Maps port 5432 inside the container to port 5433 on the host.
     networks:
-        - valu
+      - elt_network  # Connects the container to the custom network "elt_network".
+    environment:  # Sets environment variables for PostgreSQL configuration.
+      POSTGRES_DB: source_db  # Creates a database named "source_db".
+      POSTGRES_USER: postgres  # Sets the database username to "postgres".
+      POSTGRES_PASSWORD: secret  # Sets the database password to "secret".
+    volumes:
+      - ./source_db_init/init.sql:/docker-entrypoint-initdb.d/init.sql  
+        # Mounts an initialization SQL script to be executed at container startup.
+
+  destination_postgres:  # Defines the second PostgreSQL database container (destination database).
+    image: postgres:15  # Uses the same PostgreSQL image, version 15.
+    ports:
+      - '5434:5432'  # Maps port 5432 inside the container to port 5434 on the host.
+    networks:
+      - elt_network  # Connects the container to the same network.
     environment:
-        name: value
+      POSTGRES_DB: destination_db  # Creates a database named "destination_db".
+      POSTGRES_USER: postgres  # Uses the same username.
+      POSTGRES_PASSWORD: secret  # Uses the same password.
+
+  elt_script:  # Defines a service that runs an ELT (Extract, Load, Transform) script.
+    build:
+      context: ./elt_script  # Specifies the directory where the Dockerfile is located.
+      dockerfile: Dockerfile  # Name of the Dockerfile used for building the container.
+    command: ['python', 'elt_script.py']  # Runs the ELT script inside the container.
+    networks:
+      - elt_network  # Connects this service to the same network.
+    depends_on:
+      - source_postgres  # Ensures this service starts after "source_postgres" is ready.
+      - destination_postgres  # Ensures this service starts after "destination_postgres" is ready.
+
+networks:  # Defines a custom Docker network for communication between services.
+  elt_network:
+    driver: bridge  # Uses a bridge network to allow isolated communication.
