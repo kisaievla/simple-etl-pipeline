@@ -38,6 +38,28 @@ services:  # Defines the services (containers) to be created.
       - source_postgres  # Ensures this service starts after "source_postgres" is ready.
       - destination_postgres  # Ensures this service starts after "destination_postgres" is ready.
 
+  dbt:
+    image: ghcr.io/dbt-labs/dbt-postgres:latest
+    command:
+      [
+        "run",
+        "--profiles-dir",
+        "/root",
+        "--project-dir",
+        "/dbt",
+        "--full-refresh"
+      ]
+    networks:
+      - elt_network
+    volumes:
+      - ./simple_elt_pipeline:/dbt
+      - ~/.dbt:/root
+    depends_on:
+      - elt_script
+    environment:
+      DBT_PROFILE: default
+      DBT_TARGET: dev
+
 networks:  # Defines a custom Docker network for communication between services.
   elt_network:
     driver: bridge  # Uses a bridge network to allow isolated communication.
