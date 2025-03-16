@@ -39,7 +39,7 @@ services:  # Defines the services (containers) to be created.
       - destination_postgres  # Ensures this service starts after "destination_postgres" is ready.
 
   dbt:
-    image: ghcr.io/dbt-labs/dbt-postgres:latest
+    image: ghcr.io/dbt-labs/dbt-postgres:1.9.latest
     command:
       [
         "run",
