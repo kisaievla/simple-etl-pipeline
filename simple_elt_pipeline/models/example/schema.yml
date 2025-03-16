@@ -40,7 +40,6 @@ models:
           - not_null
       - name: name
         description: "First name of the actor."
-        tests:
 
   - name: film_actors
     description: "This table maps films to the actors that starred in them."

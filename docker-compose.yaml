@@ -39,6 +39,7 @@ services:  # Defines the services (containers) to be created.
       - destination_postgres  # Ensures this service starts after "destination_postgres" is ready.
 
   dbt:
+    platform: linux/x86_64
     image: ghcr.io/dbt-labs/dbt-postgres:1.9.latest
     command:
       [
@@ -57,7 +58,7 @@ services:  # Defines the services (containers) to be created.
     depends_on:
       - elt_script
     environment:
-      DBT_PROFILE: default
+      DBT_PROFILE: simple_elt_pipeline
       DBT_TARGET: dev
 
 networks:  # Defines a custom Docker network for communication between services.
